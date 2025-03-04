@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module File Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Generate Module File</h1>
+
+        <button id="uploadButton">Upload JSON</button>
+        <button id="generateTemplateButton">Generate Blank Template</button>
+
+        
+        <label for="trainerSelect">Select Trainer:</label>
+        <select id="trainerSelect">
+            <option value="">Loading trainers...</option>
+        </select>
+
+        <label for="moduleSelect">Select Module:</label>
+        <select id="moduleSelect">
+            <option value="">Loading modules...</option>
+        </select>
+
+        <button id="downloadButton">Download Module File</button>
+    </div>
+
+    <script type="module" src="template-generator.js"></script>
+
+    <!-- Replace SheetJS with ExcelJS -->
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+
+    
+    <!-- Firebase Configuration -->
+    <script type="module" src="firebase-config.js"></script>
+    
+    <!-- Main App Logic -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
