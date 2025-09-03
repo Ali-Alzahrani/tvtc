@@ -17,6 +17,13 @@ const formattedDate = today.toLocaleDateString('ar-SA'); // Format it as needed
 const trainerSelect = document.getElementById('trainerSelect');
 const moduleSelect = document.getElementById('moduleSelect');
 const downloadButton = document.getElementById('downloadButton');
+const day1Select  = document.getElementById('day1Select');
+const slot1Select = document.getElementById('slot1Select');
+const day2Select  = document.getElementById('day2Select');
+const slot2Select = document.getElementById('slot2Select');
+const STRATEGY_OPTIONS  = ['التدريب بالاكتشاف', 'التدريب البنائي', 'نظريه TRYZ', 'حل المشكلات', 'التدريب المعكوس', 'التدريب بالمحاكاه', 'دراسه الحاله', 'التدريب المتمايز'];   // استراتيجيه التدريب (column C)
+const EVALUATION_OPTIONS = ['لا يوجد', 'واجب', 'مشروع', 'اختبار قصير', 'تقييم نظري', 'تقييم عملي', 'اختيار ١', 'اختيار ٢']; // اليه التقييم (column B)
+
 
 // Fetch Trainers from Firebase
 async function loadTrainers() {
@@ -33,7 +40,7 @@ async function loadTrainers() {
 
 // Fetch Modules from Firebase
 async function loadModules() {
-    const querySnapshot = await getDocs(collection(db, "modules"));
+    const querySnapshot = await getDocs(collection(db, "modules-v3"));
     moduleSelect.innerHTML = '<option value="">Select a Module</option>';
     querySnapshot.forEach((doc) => {
         const module = doc.data();
@@ -44,6 +51,29 @@ async function loadModules() {
     });
 }
 
+// ===== NEW: validate the two day+slot selections =====
+function validateConnectionHours() {
+    const day1  = day1Select?.value;
+    const slot1 = slot1Select?.value;
+    const day2  = day2Select?.value;
+    const slot2 = slot2Select?.value;
+
+    const validDays  = new Set(['sun','mon','tue','wed','thu']);
+    const validSlots = new Set(['١ - ٢','٣ - ٤','٥ - ٦']);
+
+    if (!validDays.has(day1) || !validSlots.has(slot1) ||
+        !validDays.has(day2) || !validSlots.has(slot2)) {
+        alert('الرجاء اختيار يومين وساعات المكتب لكل يوم (1 - 2 أو 3 - 4 أو 5 - 6).');
+        return null;
+    }
+    if (day1 === day2) {
+        alert('الرجاء اختيار يومين مختلفين.');
+        return null;
+    }
+    return { day1, slot1, day2, slot2 };
+}
+
+
 // Generate and Download Styled Excel File
 downloadButton.addEventListener('click', async () => {
     const selectedTrainer = JSON.parse(trainerSelect.value);
@@ -53,6 +83,11 @@ downloadButton.addEventListener('click', async () => {
         alert('Please select both a trainer and a module.');
         return;
     }
+
+    // ===== NEW: ensure the two day+slot fields are valid before generating =====
+    const hours = validateConnectionHours();
+    if (!hours) return;
+
 
     // ######################## The professional template ######################## //
     const workbook = new ExcelJS.Workbook();
@@ -68,7 +103,7 @@ downloadButton.addEventListener('click', async () => {
         extension: 'png',
     });
 
-    // ------  Header Section -------//
+    // -------------------  Header Section -----------------------//
     // Add the image
     // Merge 5 cells for the title and 5 cells for the image
     worksheet.mergeCells('A1:E1');  // Merge A1 to E1 for the title
@@ -100,7 +135,7 @@ downloadButton.addEventListener('click', async () => {
     };
 
 
-    // --------  Trainer Information Section -------//
+    // ----------------  Trainer Information Section ---------------- //
     worksheet.addRow([]);
     worksheet.mergeCells('B3:I3');  // Merge cells from B3 to I3
     const trainerInfoCell = worksheet.getCell('B3');
@@ -140,7 +175,7 @@ downloadButton.addEventListener('click', async () => {
          worksheet.getCell(cell).alignment = { horizontal: 'center', vertical: 'middle' };
      });
 
-    // -------- Apply Borders -------- //
+    // Borders
     const borderRange = ['B3', 'I3', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4', 'I4',
                         'B5', 'C5', 'D5', 'E5', 'F5', 'G5', 'H5', 'I5',
                         'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6', 'I6'];
@@ -165,9 +200,9 @@ downloadButton.addEventListener('click', async () => {
 
     ['B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6', 'I6'].forEach(cell => worksheet.getCell(cell).border.bottom = { style: 'medium' });
 
-    // -------- Contact Section -------//
+    // ---------------- Contact Section ---------------- //
 
-    // ------ Trainer Contact (First Instance) ----- //
+    // Trainer Contact  
     worksheet.addRow([]);
     worksheet.mergeCells('B8:I8');
     const contactInfoCell = worksheet.getCell('B8');
@@ -200,6 +235,28 @@ downloadButton.addEventListener('click', async () => {
     worksheet.getCell('C12').value = 'من - الى';
     worksheet.getCell('B12').value = 'من - الى';
 
+    // ===== NEW: Row 13 — office hour slots from the form selections =====
+    const dayToCell = {
+        sun: 'F13', // الأحد
+        mon: 'E13', // الإثنين
+        tue: 'D13', // الثلاثاء
+        wed: 'C13', // الأربعاء
+        thu: 'B13'  // الخميس
+    };
+    
+    // Clear row 13 first
+    ['F13','E13','D13','C13','B13'].forEach(addr => { worksheet.getCell(addr).value = ''; });
+    
+    // Place the two selected slots according to chosen days
+    worksheet.getCell(dayToCell[hours.day1]).value = hours.slot1;
+    worksheet.getCell(dayToCell[hours.day2]).value = hours.slot2;
+    
+    // Optional: center these cells like the others
+    ['F13','E13','D13','C13','B13'].forEach(addr => {
+        worksheet.getCell(addr).alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+    
+
     // Centering the text in all these cells
     const cellsToCenter = ["F9", "D9", "B9", "B10", "F11", "E11", "D11", "C11", "B11", "F12", "E12", "D12", "C12", "B12", ]; // List of cells to center
     cellsToCenter.forEach(cell => {
@@ -207,7 +264,7 @@ downloadButton.addEventListener('click', async () => {
     });
 
 
-    // ------ Head of Department Contact (Second Instance) ----- //
+    //  Boss Contact 
     worksheet.addRow([]);
     worksheet.addRow([]);
     worksheet.mergeCells('G15:I19');
@@ -241,7 +298,7 @@ downloadButton.addEventListener('click', async () => {
     });
 
 
-    //  Apply Borders for Both Instances
+    // Borders
     const contactBorderRanges = [
         ['B8', 'C8', 'D8', 'E8', 'F8', 'G8', 'H8', 'I8',
         'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9', 'I9',
@@ -378,6 +435,11 @@ downloadButton.addEventListener('click', async () => {
     moduleDecribtion.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
 
     worksheet.mergeCells('B29:I32');
+    // تعبئة وصف المقرر (B29)
+    worksheet.getCell('B29').value =
+    selectedModule['وصف المقرر'] || '';
+    worksheet.getCell('B29').alignment = { wrapText: true, horizontal: 'right', vertical: 'top' };
+
 
     // Apply medium external borders for the merged header cell (B28:I28)
     worksheet.getCell('B28').border = {
@@ -405,8 +467,13 @@ downloadButton.addEventListener('click', async () => {
     generalGoal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
 
     worksheet.mergeCells('B35:I38');
+    // تعبئة الهدف العام من المقرر (B35)
+    worksheet.getCell('B35').value =
+    (selectedModule['الهدف العام من المقرر'] ?? selectedModule['الهدف العام'] ?? '');
+    worksheet.getCell('B35').alignment = { wrapText: true, horizontal: 'right', vertical: 'top' };
 
-    // The borders
+
+    // Borders
     worksheet.getCell('B34').border = {
         top: { style: 'medium' },
         left: { style: 'medium' },
@@ -421,7 +488,7 @@ downloadButton.addEventListener('click', async () => {
         bottom: { style: 'medium' }
     };
 
-    // ------------ Training requitments ------------ //
+    // ---------------- Training requitments ---------------- //
     worksheet.addRow([]);
     worksheet.mergeCells('B40:I40');  
     const trainingRequirement = worksheet.getCell('B40');
@@ -471,8 +538,13 @@ downloadButton.addEventListener('click', async () => {
     safty.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
 
     worksheet.mergeCells('B48:I51');
+    // تعبئة تعليمات/اشتراطات السلامة (B48)
+    worksheet.getCell('B48').value =
+    selectedModule['اشتراطات السلامه'] || '';
+    worksheet.getCell('B48').alignment = { wrapText: true, horizontal: 'right', vertical: 'top' };
 
-    // The borders
+
+    // Borders
     worksheet.getCell('B47').border = {
         top: { style: 'medium' },
         left: { style: 'medium' },
@@ -488,7 +560,7 @@ downloadButton.addEventListener('click', async () => {
     };
 
 
-    // ---------------- Training plan -------------- //
+    // ---------------- Training plan ---------------- //
     worksheet.mergeCells('A54:J54');  
     const trainingPlan = worksheet.getCell('A54');
     trainingPlan.value = 'الخطه التدريبيه';
@@ -539,8 +611,45 @@ downloadButton.addEventListener('click', async () => {
         
     });
 
+    // ===== NEW: add dropdown data validation for each lesson row =====
+    // We add validation only for rows that actually have a lesson.
+    const lessonCount = Array.isArray(selectedModule.lessons)
+    ? Math.min(40, selectedModule.lessons.length)
+    : 0;
 
-    // Apply borders
+    for (let i = 0; i < lessonCount; i++) {
+    const row = 56 + i; // lesson rows start at 56
+
+    // Column C: استراتيجيه التدريب
+    worksheet.getCell(`C${row}`).dataValidation = {
+    type: 'list',
+    allowBlank: true,
+    formulae: [`"${STRATEGY_OPTIONS.join(',')}"`],
+    showInputMessage: true,
+    promptTitle: 'اختيار من القائمة',
+    prompt: 'اختر قيمة لاستراتيجية التدريب',
+    showErrorMessage: true,
+    errorTitle: 'قيمة غير صالحة',
+    error: 'الرجاء اختيار قيمة من القائمة.'
+    };
+
+    // Column B: اليه التقييم
+    worksheet.getCell(`B${row}`).dataValidation = {
+    type: 'list',
+    allowBlank: true,
+    formulae: [`"${EVALUATION_OPTIONS.join(',')}"`],
+    showInputMessage: true,
+    promptTitle: 'اختيار من القائمة',
+    prompt: 'اختر قيمة لآلية التقييم',
+    showErrorMessage: true,
+    errorTitle: 'قيمة غير صالحة',
+    error: 'الرجاء اختيار قيمة من القائمة.'
+    };
+    }
+
+
+
+    // Borders
     const tableRange = [];
     for (let i = 55; i <= 95; i++) {
         ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'].forEach(col => {
@@ -572,7 +681,7 @@ downloadButton.addEventListener('click', async () => {
     };
 
 
-    // ----------- Training resources -------- //
+    // ---------------- Training resources ---------------- //
     worksheet.addRow([]);
     worksheet.mergeCells('B97:I97');  
     const trainingResources = worksheet.getCell('B97');
@@ -609,7 +718,7 @@ downloadButton.addEventListener('click', async () => {
         formattedCell.font = { size: 8 };
     });
 
-    // Apply borders
+    // Borders
     const trainingResourcesTableRange = [];
     for (let i = 97; i <= 101; i++) {
         ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].forEach(col => {
@@ -634,7 +743,7 @@ downloadButton.addEventListener('click', async () => {
     ['B97', 'B98', 'B99', 'B100', 'B101'].forEach(cell => worksheet.getCell(cell).border.left = { style: 'medium' });
     ['I97', 'I98', 'I99', 'I100', 'I101'].forEach(cell => worksheet.getCell(cell).border.right = { style: 'medium' });
 
-    // -------------- Quality assessment --------------- //
+    // ---------------- Quality assessment ---------------- //
     worksheet.addRow([]);
     worksheet.mergeCells('B103:I103');  
     const trainingResources2 = worksheet.getCell('B103');
@@ -671,7 +780,7 @@ downloadButton.addEventListener('click', async () => {
         formattedCell.font = { size: 8 };
     });
 
-    // Apply borders
+    // Borders
     const trainingResourcesTableRange2 = [];
     for (let i = 103; i <= 107; i++) {
         ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].forEach(col => {
@@ -697,7 +806,7 @@ downloadButton.addEventListener('click', async () => {
     ['I103', 'I104', 'I105', 'I106', 'I107'].forEach(cell => worksheet.getCell(cell).border.right = { style: 'medium' });
 
 
-    // -------------------- Trainer and Head Names Table ------------ // 
+    // -------------------- Trainer and Head Names Table ---------------- // 
 
     // Trainer
     worksheet.addRow([]);
@@ -744,7 +853,7 @@ downloadButton.addEventListener('click', async () => {
         formattedCell.font = { size: 10 };
     });
 
-    // Apply borders
+    // Borders
     const trainerHeadTableRange = [];
     for (let i = 109; i <= 110; i++) {
         ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'].forEach(col => {
@@ -774,15 +883,7 @@ downloadButton.addEventListener('click', async () => {
     
     // -------------------------------------------------------------------------- //
 
-    // Adjust column widths
-    worksheet.columns.forEach(column => {
-        column.width = 10;
-    });
-
-    // Set default column width to 100 pixels
-    //['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
-      //  worksheet.getColumn(col).width = 8.5;  // Set all used columns to a narrower width
-    //});
+    // Define widths for columns A to J
     worksheet.getColumn('A').width = 7;
     worksheet.getColumn('B').width = 7;
     worksheet.getColumn('C').width = 8;
@@ -792,7 +893,13 @@ downloadButton.addEventListener('click', async () => {
     worksheet.getColumn('G').width = 7;
     worksheet.getColumn('H').width = 15.5;
     worksheet.getColumn('I').width = 15;
-    worksheet.getColumn('J').width = 2.5; 
+    worksheet.getColumn('J').width = 2.5;
+
+    // Hide all columns beyond J (starting from column 11 to 16384)
+    for (let col = 11; col <= 16384; col++) {
+        worksheet.getColumn(col).hidden = true; // Hide the column completely
+    }
+
 
 
     // Generate and download the file (no conflict with 'imageBlob')
@@ -802,60 +909,7 @@ downloadButton.addEventListener('click', async () => {
     link.href = URL.createObjectURL(fileBlob);
     link.download = 'Module_Template.xlsx';
     link.click();
-    // ==================================================//
 
-    // ============= The old basic template ============ //
-    /*
-    // Create workbook and worksheet using ExcelJS
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Module File');
-
-    // Add trainer and module details
-    worksheet.addRow(['Trainer Name', selectedTrainer.name]);
-    worksheet.addRow(['Grade', selectedTrainer.grade]);
-    worksheet.addRow(['Module Name', selectedModule['module name']]);
-    worksheet.addRow(['Level', selectedModule.level]);
-    worksheet.addRow(['Code', selectedModule.code]);
-
-    // Add an empty row for spacing
-    worksheet.addRow([]);
-
-    // Add lessons header
-    const headerRow = worksheet.addRow(['Lessons']);
-    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2196F3' } };
-
-    // Add lessons under the "Lessons" column
-    selectedModule.lessons.forEach(lesson => {
-        const row = worksheet.addRow([lesson]);
-        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE3F2FD' } };
-    });
-
-    // Style the first five rows (Trainer and Module details)
-    for (let i = 1; i <= 5; i++) {
-        worksheet.getRow(i).font = { bold: true };
-        worksheet.getRow(i).getCell(1).fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FF4CAF50' }
-        };
-        worksheet.getRow(i).getCell(1).font = { color: { argb: 'FFFFFFFF' } };
-    }
-
-    // Adjust column widths
-    worksheet.columns.forEach(column => {
-        column.width = 40;
-    });
-
-    // Generate the file and download
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${selectedTrainer.name}_${selectedModule['module name']}.xlsx`;
-    link.click();
-    */
-    // ============================================= //
 });
 
 // Load data on page load
