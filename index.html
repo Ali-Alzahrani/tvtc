@@ -1,43 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Module File Generator</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Light, local styling so you don't have to touch styles.css */
+      .container { max-width: 900px; margin: 32px auto; padding: 16px; }
+      label { display:block; margin-top:16px; font-weight:600; }
+      select, button { width:100%; padding:10px; font-size:16px; }
+      .row-2 { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+      .section { margin-top: 20px; padding: 12px; border: 1px solid #eee; border-radius: 10px; }
+      .section h2 { margin: 0 0 8px; font-size: 18px; }
+      .muted { color:#666; font-size:14px; }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>اعداد ملف المدرب</h1>
+        <h1>Generate Module File</h1>
 
-        <!--
-        <button id="uploadButton">Upload JSON</button>
-        <button id="generateTemplateButton">Generate Blank Template</button>
-        -->
+        <!-- Use this button only when you want to upload JSON to Firebase -->
+        <!-- <button id="uploadButton">Upload JSON</button> -->
 
-        
-        <label for="trainerSelect">اختر اسم المدرب</label>
+        <label for="trainerSelect">Select Trainer:</label>
         <select id="trainerSelect">
             <option value="">Loading trainers...</option>
         </select>
 
-        <label for="moduleSelect">اختر الماده</label>
+        <label for="moduleSelect">Select Module:</label>
         <select id="moduleSelect">
             <option value="">Loading modules...</option>
         </select>
 
-        <button id="downloadButton">انتاج وتحميل الملف</button>
+        <!-- NEW: Connection Hours (two days, each with a time slot) -->
+        <div class="section" id="connectionHours">
+          <h2>ساعات التواصل مع المتدربين</h2>
+          <p class="muted">اختر يومين وساعات المكتب لكل يوم (1 - 2 أو 3 - 4 أو 5 - 6).</p>
+
+          <!-- Day 1 -->
+          <label>اليوم الأول والساعات:</label>
+          <div class="row-2">
+            <select id="day1Select">
+                <option value="">اختر اليوم</option>
+                <option value="sun">الأحد</option>
+                <option value="mon">الإثنين</option>
+                <option value="tue">الثلاثاء</option>
+                <option value="wed">الأربعاء</option>
+                <option value="thu">الخميس</option>
+            </select>
+            <select id="slot1Select">
+                <option value="">اختر الساعات</option>
+                <option value="١ - ٢">١ - ٢</option>
+                <option value="٣ - ٤">٣ - ٤</option>
+                <option value="٥ - ٦">٥ - ٦</option>
+            </select>
+              
+          </div>
+
+          <!-- Day 2 -->
+          <label>اليوم الثاني والساعات:</label>
+          <div class="row-2">
+            <select id="day2Select">
+                <option value="">اختر اليوم</option>
+                <option value="sun">الأحد</option>
+                <option value="mon">الإثنين</option>
+                <option value="tue">الثلاثاء</option>
+                <option value="wed">الأربعاء</option>
+                <option value="thu">الخميس</option>
+            </select>
+            <select id="slot2Select">
+                <option value="">اختر الساعات</option>
+                <option value="١ - ٢">١ - ٢</option>
+                <option value="٣ - ٤">٣ - ٤</option>
+                <option value="٥ - ٦">٥ - ٦</option>
+            </select>
+          </div>
+        </div>
+        <!-- END NEW -->
+
+        <button id="downloadButton">Download Module File</button>
     </div>
 
     <script type="module" src="template-generator.js"></script>
 
-    <!-- Replace SheetJS with ExcelJS -->
+    <!-- ExcelJS -->
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
 
-    
     <!-- Firebase Configuration -->
     <script type="module" src="firebase-config.js"></script>
-    
+
     <!-- Main App Logic -->
     <script type="module" src="app.js"></script>
 </body>
