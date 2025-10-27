@@ -1,6 +1,7 @@
+/* ===== Global Layout ===== */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background: linear-gradient(135deg, #f7faff, #e8f1ff);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -8,30 +9,94 @@ body {
     margin: 0;
 }
 
+/* ===== Container ===== */
 .container {
-    background-color: white;
+    background-color: #fff;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
-    width: 300px;
+    width: 400px; /* back to original width */
 }
 
-label, select, button {
+/* ===== Typography ===== */
+.container .subTitle {
+    text-align: right;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+label {
+    display: block;
+    margin: 12px 0 6px;
+    font-weight: 600;
+    text-align: right;
+}
+
+/* ===== Form Elements ===== */
+select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+select:focus {
+    border-color: #339CFF;
+    box-shadow: 0 0 4px rgba(51, 156, 255, 0.5);
+    outline: none;
+}
+
+/* ===== Button ===== */
+button {
     display: block;
     width: 100%;
-    margin: 10px 0;
-}
-
-button {
-    padding: 10px;
-    background-color: #4CAF50;
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #339CFF;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #238BE6;
+}
+
+button:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Layout Utilities ===== */
+.row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.section {
+    margin-top: 20px;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    background-color: aliceblue;
+}
+
+.section h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+}
+
+.muted {
+    color: #666;
+    font-size: 14px;
 }
