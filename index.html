@@ -1,101 +1,95 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>الانشاء الالي لملف المقرر</title>
-    <link rel="stylesheet" href="styles.css" />
-    <style>
-      /* Light, local styling so you don't have to touch styles.css */
-     
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>الانشاء الالي لملف المقرر</title>
+  <link rel="stylesheet" href="styles.css" />
+  
 </head>
 <body>
-    <div class="container">
-        <h1>انشئ ملف المقرر</h1>
+  <div class="container">
+    <!-- College Logo -->
+    <div class="logo-container">
+      <img src="images/logo.png" alt="شعار الكلية">
+    </div>
+    <div class="logo-divider"></div>
 
-        <!-- Use this button only when you want to upload JSON to Firebase -->
-        <!-- <button id="uploadButton">Upload JSON</button> -->
+    <h1>انشاء ملف المقرر</h1>
 
-        <label for="trainerSelect" class="subTitle">القسم:</label>
-        <select id="sectionSelect">
-            <option value="">اختر القسم</option>
-            <option value="قسم الحاسب الالي">قسم الحاسب الالي</option>
-            <option value="قسم التقنيه الاداريه والماليه">قسم التقنية الإدارية والمالية</option>
-            <option value="قسم الالكترونيات">قسم الالكترونيات</option>
-            <option value="قسم التقنيه الكهربائيه">قسم التقنية الكهربائية</option>
+    <!-- القسم -->
+    <label for="trainerSelect" class="subTitle">القسم:</label>
+    <select id="sectionSelect">
+      <option value="">اختر القسم</option>
+      <option value="قسم الحاسب الالي">قسم الحاسب الالي</option>
+      <option value="قسم التقنيه الاداريه والماليه">قسم التقنية الإدارية والمالية</option>
+      <option value="قسم الالكترونيات">قسم الالكترونيات</option>
+      <option value="قسم التقنيه الكهربائيه">قسم التقنية الكهربائية</option>
+    </select>
 
+    <!-- المدرب -->
+    <label for="trainerSelect" class="subTitle">اسم المدرب:</label>
+    <select id="trainerSelect">
+      <option value="">جاري التحميل ...</option>
+    </select>
 
+    <!-- المقرر -->
+    <label for="moduleSelect" class="subTitle">المقرر:</label>
+    <select id="moduleSelect">
+      <option value="">جاري التحميل ...</option>
+    </select>
+
+    <!-- NEW: ساعات التواصل -->
+    <div class="section" id="connectionHours">
+      <h2>ساعات التواصل مع المتدربين</h2>
+      <p class="muted">اختر يومين وساعات المكتب لكل يوم (1 - 2 أو 3 - 4 أو 5 - 6).</p>
+
+      <!-- اليوم الأول -->
+      <label>اليوم الأول والساعات:</label>
+      <div class="row-2">
+        <select id="day1Select">
+          <option value="">اختر اليوم</option>
+          <option value="sun">الأحد</option>
+          <option value="mon">الإثنين</option>
+          <option value="tue">الثلاثاء</option>
+          <option value="wed">الأربعاء</option>
+          <option value="thu">الخميس</option>
         </select>
-          
-        <label for="trainerSelect" class="subTitle">اسم المدرب:</label>
-        <select id="trainerSelect">
-            <option value="">جاري التحميل ...</option>
+        <select id="slot1Select">
+          <option value="">اختر الساعات</option>
+          <option value="١ - ٢">١ - ٢</option>
+          <option value="٣ - ٤">٣ - ٤</option>
+          <option value="٥ - ٦">٥ - ٦</option>
         </select>
+      </div>
 
-        <label for="moduleSelect" class="subTitle">المقرر:</label>
-        <select id="moduleSelect">
-            <option value="">جاري التحميل ...</option>
+      <!-- اليوم الثاني -->
+      <label>اليوم الثاني والساعات:</label>
+      <div class="row-2">
+        <select id="day2Select">
+          <option value="">اختر اليوم</option>
+          <option value="sun">الأحد</option>
+          <option value="mon">الإثنين</option>
+          <option value="tue">الثلاثاء</option>
+          <option value="wed">الأربعاء</option>
+          <option value="thu">الخميس</option>
         </select>
-
-        <!-- NEW: Connection Hours (two days, each with a time slot) -->
-        <div class="section" id="connectionHours">
-          <h2>ساعات التواصل مع المتدربين</h2>
-          <p class="muted">اختر يومين وساعات المكتب لكل يوم (1 - 2 أو 3 - 4 أو 5 - 6).</p>
-
-          <!-- Day 1 -->
-          <label>اليوم الأول والساعات:</label>
-          <div class="row-2">
-            <select id="day1Select">
-                <option value="">اختر اليوم</option>
-                <option value="sun">الأحد</option>
-                <option value="mon">الإثنين</option>
-                <option value="tue">الثلاثاء</option>
-                <option value="wed">الأربعاء</option>
-                <option value="thu">الخميس</option>
-            </select>
-            <select id="slot1Select">
-                <option value="">اختر الساعات</option>
-                <option value="١ - ٢">١ - ٢</option>
-                <option value="٣ - ٤">٣ - ٤</option>
-                <option value="٥ - ٦">٥ - ٦</option>
-            </select>
-              
-          </div>
-
-          <!-- Day 2 -->
-          <label>اليوم الثاني والساعات:</label>
-          <div class="row-2">
-            <select id="day2Select">
-                <option value="">اختر اليوم</option>
-                <option value="sun">الأحد</option>
-                <option value="mon">الإثنين</option>
-                <option value="tue">الثلاثاء</option>
-                <option value="wed">الأربعاء</option>
-                <option value="thu">الخميس</option>
-            </select>
-            <select id="slot2Select">
-                <option value="">اختر الساعات</option>
-                <option value="١ - ٢">١ - ٢</option>
-                <option value="٣ - ٤">٣ - ٤</option>
-                <option value="٥ - ٦">٥ - ٦</option>
-            </select>
-          </div>
-        </div>
-        <!-- END NEW -->
-
-        <button id="downloadButton">تنزيل الملف</button>
+        <select id="slot2Select">
+          <option value="">اختر الساعات</option>
+          <option value="١ - ٢">١ - ٢</option>
+          <option value="٣ - ٤">٣ - ٤</option>
+          <option value="٥ - ٦">٥ - ٦</option>
+        </select>
+      </div>
     </div>
 
-    <script type="module" src="template-generator.js"></script>
+    <button id="downloadButton">تنزيل الملف</button>
+  </div>
 
-    <!-- ExcelJS -->
-    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
-
-    <!-- Firebase Configuration -->
-    <script type="module" src="firebase-config.js"></script>
-
-    <!-- Main App Logic -->
-    <script type="module" src="app.js"></script>
+  <!-- Scripts -->
+  <script type="module" src="template-generator.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
