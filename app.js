@@ -1,5 +1,4 @@
 
-
 import { db } from './Firebase-config.js';
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
