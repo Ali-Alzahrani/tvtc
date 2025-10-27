@@ -1,36 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Module File Generator</title>
+    <title>الانشاء الالي لملف المقرر</title>
     <link rel="stylesheet" href="styles.css" />
     <style>
       /* Light, local styling so you don't have to touch styles.css */
-      .container { max-width: 900px; margin: 32px auto; padding: 16px; }
-      label { display:block; margin-top:16px; font-weight:600; }
-      select, button { width:100%; padding:10px; font-size:16px; }
-      .row-2 { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-      .section { margin-top: 20px; padding: 12px; border: 1px solid #eee; border-radius: 10px; }
-      .section h2 { margin: 0 0 8px; font-size: 18px; }
-      .muted { color:#666; font-size:14px; }
+     
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Generate Module File</h1>
+        <h1>انشئ ملف المقرر</h1>
 
         <!-- Use this button only when you want to upload JSON to Firebase -->
         <!-- <button id="uploadButton">Upload JSON</button> -->
 
-        <label for="trainerSelect">Select Trainer:</label>
+        <label for="trainerSelect" class="subTitle">القسم:</label>
+        <select id="sectionSelect">
+            <option value="">اختر القسم</option>
+            <option value="قسم الحاسب الالي">قسم الحاسب الالي</option>
+            <option value="قسم التقنيه الاداريه والماليه">قسم التقنية الإدارية والمالية</option>
+            <option value="قسم الالكترونيات">قسم الالكترونيات</option>
+            <option value="قسم التقنيه الكهربائيه">قسم التقنية الكهربائية</option>
+
+
+        </select>
+          
+        <label for="trainerSelect" class="subTitle">اسم المدرب:</label>
         <select id="trainerSelect">
-            <option value="">Loading trainers...</option>
+            <option value="">جاري التحميل ...</option>
         </select>
 
-        <label for="moduleSelect">Select Module:</label>
+        <label for="moduleSelect" class="subTitle">المقرر:</label>
         <select id="moduleSelect">
-            <option value="">Loading modules...</option>
+            <option value="">جاري التحميل ...</option>
         </select>
 
         <!-- NEW: Connection Hours (two days, each with a time slot) -->
@@ -79,7 +84,7 @@
         </div>
         <!-- END NEW -->
 
-        <button id="downloadButton">Download Module File</button>
+        <button id="downloadButton">تنزيل الملف</button>
     </div>
 
     <script type="module" src="template-generator.js"></script>
