@@ -14,6 +14,7 @@ const today = new Date();
 const formattedDate = today.toLocaleDateString('ar-SA'); // Format it as needed
 
 // Elements
+const sectionSelect = document.getElementById('sectionSelect'); // NEW: Section selection
 const trainerSelect = document.getElementById('trainerSelect');
 const moduleSelect = document.getElementById('moduleSelect');
 const downloadButton = document.getElementById('downloadButton');
@@ -21,14 +22,48 @@ const day1Select  = document.getElementById('day1Select');
 const slot1Select = document.getElementById('slot1Select');
 const day2Select  = document.getElementById('day2Select');
 const slot2Select = document.getElementById('slot2Select');
-const STRATEGY_OPTIONS  = ['التدريب بالاكتشاف', 'التدريب البنائي', 'نظريه TRYZ', 'حل المشكلات', 'التدريب المعكوس', 'التدريب بالمحاكاه', 'دراسه الحاله', 'التدريب المتمايز'];   // استراتيجيه التدريب (column C)
-const EVALUATION_OPTIONS = ['لا يوجد', 'واجب', 'مشروع', 'اختبار قصير', 'تقييم نظري', 'تقييم عملي', 'اختيار ١', 'اختيار ٢']; // اليه التقييم (column B)
 
+const STRATEGY_OPTIONS  = [
+    'التدريب بالاكتشاف', 'التدريب البنائي', 'نظريه TRYZ', 
+    'حل المشكلات', 'التدريب المعكوس', 'التدريب بالمحاكاه', 
+    'دراسه الحاله', 'التدريب المتمايز'
+];   // استراتيجيه التدريب (column C)
 
-// Fetch Trainers from Firebase
+const EVALUATION_OPTIONS = [
+    'لا يوجد', 'واجب', 'مشروع', 'اختبار قصير', 
+    'تقييم نظري', 'تقييم عملي', 'اختيار ١', 'اختيار ٢'
+]; // اليه التقييم (column B)
+
+// Variable to store selected section
+let selectedSection = null;
+
+// When section changes, load the correct trainers and modules
+sectionSelect.addEventListener('change', async () => {
+    selectedSection = sectionSelect.value;
+    if (!selectedSection) {
+        trainerSelect.innerHTML = '<option value="">اختر القسم أولاً</option>';
+        moduleSelect.innerHTML = '<option value="">اختر القسم أولاً</option>';
+        return;
+    }
+
+    await Promise.all([loadTrainers(), loadModules()]);
+});
+
+// Fetch Trainers from Firebase (depends on section)
 async function loadTrainers() {
-    const querySnapshot = await getDocs(collection(db, "trainers"));
-    trainerSelect.innerHTML = '<option value="">Select a Trainer</option>';
+    let collectionName;
+    if (selectedSection === 'قسم الحاسب الالي') {
+        collectionName = 'trainers';
+    } else if (selectedSection === 'قسم التقنيه الاداريه والماليه') {
+        collectionName = 'trainers-administrative-and-financial';
+    } else if (selectedSection === 'قسم الالكترونيات') {
+        collectionName = 'trainers-electronics';
+    } else if (selectedSection === 'قسم التقنيه الكهربائيه') {
+        collectionName = 'trainers-electricity';
+    }
+
+    const querySnapshot = await getDocs(collection(db, collectionName));
+    trainerSelect.innerHTML = '<option value="">اختر المدرب</option>';
     querySnapshot.forEach((doc) => {
         const trainer = doc.data();
         const option = document.createElement('option');
@@ -38,10 +73,21 @@ async function loadTrainers() {
     });
 }
 
-// Fetch Modules from Firebase
+// Fetch Modules from Firebase (depends on section)
 async function loadModules() {
-    const querySnapshot = await getDocs(collection(db, "modules-v3"));
-    moduleSelect.innerHTML = '<option value="">Select a Module</option>';
+    let collectionName;
+    if (selectedSection === 'قسم الحاسب الالي') {
+        collectionName = 'modules-v3';
+    } else if (selectedSection === 'قسم التقنيه الاداريه والماليه') {
+        collectionName = 'modules-administrative-and-financial';
+    } else if (selectedSection === 'قسم الالكترونيات') {
+        collectionName = 'modules-electronics';
+    } else if (selectedSection === 'قسم التقنيه الكهربائيه') {
+        collectionName = 'modules-electricity';
+    }
+
+    const querySnapshot = await getDocs(collection(db, collectionName));
+    moduleSelect.innerHTML = '<option value="">اختر المقرر</option>';
     querySnapshot.forEach((doc) => {
         const module = doc.data();
         const option = document.createElement('option');
@@ -50,6 +96,8 @@ async function loadModules() {
         moduleSelect.appendChild(option);
     });
 }
+
+
 
 // ===== NEW: validate the two day+slot selections =====
 function validateConnectionHours() {
@@ -166,8 +214,11 @@ downloadButton.addEventListener('click', async () => {
     // Filling the cells with the data coming from Firebase
     worksheet.getCell('F4').value = selectedTrainer.Number || 'N/A';
     worksheet.getCell('F5').value = selectedTrainer.name || 'N/A';
-    worksheet.getCell('F6').value = 'تقنيه الحاسب الالي';
-    worksheet.getCell('B4').value = '6';
+    worksheet.getCell('F6').value = selectedTrainer.section || 'N/A';
+    worksheet.getCell('B4').value = selectedTrainer.building_no || 'N/A';
+    worksheet.getCell('B5').value = selectedTrainer.office_no || 'N/A';
+    worksheet.getCell('B6').value = selectedTrainer.email || 'N/A';
+
 
      // Centering the text in all these cells
      const cellsToCenter4 = ["I4", "I5", "I6", "E4", "E5", "E6", "F4", "F5", "F6", "B4", "B5", "B6"]; // List of cells to center
@@ -386,6 +437,14 @@ downloadButton.addEventListener('click', async () => {
     worksheet.getCell('B24').value = selectedModule.connection_hours || 'N/A';
     worksheet.getCell('B25').value = selectedModule.approved_hours || 'N/A';
     worksheet.getCell('B26').value = selectedModule.requirement || 'N/A';
+    worksheet.getCell('F22').value = selectedModule.section || 'N/A';
+    worksheet.getCell('F23').value = selectedModule.major || 'N/A';
+    worksheet.getCell('F26').value = selectedModule.training_type || 'N/A';
+    worksheet.getCell('B22').value = selectedModule.training_mode || 'N/A';
+
+
+
+
 
 
     // Centering the text in all these cells
@@ -833,7 +892,7 @@ downloadButton.addEventListener('click', async () => {
     const headName = worksheet.getCell('I110');
     headName.value = 'رئيس القسم';
 
-    worksheet.getCell('G110').value = 'م. احمد العيسى'
+    //worksheet.getCell('G110').value = 'م. احمد العيسى'
 
     worksheet.mergeCells('G110:H110');
     worksheet.mergeCells('E110:F110');
