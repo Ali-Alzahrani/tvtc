@@ -121,3 +121,11 @@ button:active {
     margin: 15px auto 30px auto;
     border-radius: 1px;
   }
+
+ .credits {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #777;
+    text-align: left;
+  }
+  
