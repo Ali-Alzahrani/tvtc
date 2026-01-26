@@ -342,6 +342,11 @@ downloadButton.addEventListener('click', async () => {
     worksheet.getCell('C18').value = 'من - الى';
     worksheet.getCell('B18').value = 'من - الى';
 
+    worksheet.mergeCells('B19:F19');
+    worksheet.getCell('B19').value = ('طوال الاسبوع');
+    worksheet.getCell('B19').alignment = { horizontal: 'center', vertical: 'middle' };
+
+
     // Centering the text in all these cells
     const cellsToCenter2 = ["F15", "D15", "B15", "B16", "F17", "E17", "D17", "C17", "B17", "F18", "E18", "D18", "C18", "B18"]; // List of cells to center
     cellsToCenter2.forEach(cell => {
@@ -628,15 +633,17 @@ downloadButton.addEventListener('click', async () => {
     trainingPlan.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
 
     // Table header
-    worksheet.getCell('J55').value = 'ت'
-    worksheet.mergeCells('H55:I55');
+    worksheet.getCell('J55').value = 'الاسبوع التدريبي'
+    worksheet.mergeCells('G55:I55');
     const columnOneTitle = worksheet.getCell('H55');
     columnOneTitle.value = 'الوحدات النظريه والعمليه';
-    worksheet.mergeCells('F55:G55');
+    //worksheet.mergeCells('F55:G55');
     const columnTwoTitle = worksheet.getCell('F55');
-    columnTwoTitle.value = 'الاهداف التفصيليه';
-    worksheet.getCell('E55').value = 'الاسبوع التدريبي'
-    worksheet.getCell('D55').value = 'ساعات التدريب'
+    columnTwoTitle.value = 'ساعات التدريب';
+    worksheet.getCell('D55').value = 'الاهداف التفصيليه';
+    worksheet.mergeCells('D55:E55');
+    //worksheet.getCell('E55').value = 'ت'
+    //worksheet.getCell('D55').value = 'ساعات التدريب'
     worksheet.getCell('C55').value = 'استراتيجيه التدريب'
     worksheet.getCell('B55').value = 'اليه التقييم'
     worksheet.getCell('A55').value = 'درجه التقييم'
@@ -650,22 +657,63 @@ downloadButton.addEventListener('click', async () => {
         cell.font = { bold: true, size: 8 };
     });
 
-   // Create 40 empty rows with sequence numbers in column J
-    for (let i = 1; i <= 40; i++) {
+    // Create empty rows 
+    for (let i = 1; i <= 57; i++) {
         const rowNumber = 55 + i;
-        const cell = worksheet.getCell(`J${rowNumber}`);
-        cell.value = i; // Fill sequence numbers in column J
-        cell.font = { size: 8 };
-        worksheet.mergeCells(`H${rowNumber}:I${rowNumber}`); // Merge H and I in each row
-        worksheet.mergeCells(`F${rowNumber}:G${rowNumber}`); // Merge F and G in each row
-    }
+        //const cell = worksheet.getCell(`J${rowNumber}`);
+        //cell.value = i; // Fill sequence numbers in column J
+        //cell.font = { size: 8 };
+        //worksheet.mergeCells(`H${rowNumber}:I${rowNumber}`); // Merge H and I in each row
+        //worksheet.mergeCells(`F${rowNumber}:G${rowNumber}`); // Merge F and G in each row
+        worksheet.mergeCells(`G${rowNumber}:H${rowNumber}`);
+        worksheet.mergeCells(`D${rowNumber}:E${rowNumber}`);
+    } 
 
+    // Merge every 3 rows together in column J (rows 56–112)
+    // Merge every 3 rows together in column J (rows 56–112) + label weeks vertically
+    // ===== Column J: merge every 3 rows into one week + vertical Arabic label =====
+    // ===== Column J: merge every 3 rows into one week + vertical Arabic label =====
+    const weekLabels = [
+        'الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر',
+        'الحادي عشر','الثاني عشر','الثالث عشر','الرابع عشر','الخامس عشر','السادس عشر','السابع عشر','الثامن عشر','التاسع عشر'
+    ];
+    
+    let weekIndex = 0;
+    
+    for (let startRow = 56; startRow <= 112; startRow += 3) {
+        const endRow = Math.min(startRow + 2, 112);
+        worksheet.mergeCells(`J${startRow}:J${endRow}`);
+    
+        const cell = worksheet.getCell(`J${startRow}`);
+        cell.value = weekLabels[weekIndex] ?? '';
+        weekIndex++;
+    
+        cell.alignment = {
+        vertical: 'middle',
+        horizontal: 'center',
+        textRotation: 90
+        };
+        cell.font = { size: 8, bold: true };
+    }
+    
+    // ===== Column I: Arabic-correct lesson/week order =====
+    // lesson-week → 1-1, 2-1, 3-1, 1-2, 2-2, ...
+    for (let row = 56; row <= 112; row++) {
+        const weekNumber   = Math.floor((row - 56) / 3) + 1; // 1..19
+        const lessonNumber = ((row - 56) % 3) + 1;           // 1..3
+    
+        const cell = worksheet.getCell(`I${row}`);
+        cell.value = `${lessonNumber}-${weekNumber}`; // ✅ RTL-friendly
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.font = { size: 8 };
+    }
+  
     // Filling the Excel table with the lessons data
     selectedModule.lessons.forEach((lesson, index) => {
         if (index >= 40) return; // Ensure we don't exceed 40 rows
 
         const rowNumber = 56 + index; // Rows start from 56
-        const lessonCell = worksheet.getCell(`H${rowNumber}`);
+        const lessonCell = worksheet.getCell(`G${rowNumber}`);
         lessonCell.value = lesson; // Assign lesson to the merged column (H:I)        
         
     });
@@ -706,11 +754,161 @@ downloadButton.addEventListener('click', async () => {
     };
     }
 
+    // The total of training hours and marks
+   // The total of training hours and marks
+
+    // The total of training hours and marks
+
+    worksheet.mergeCells('G113:J113');
+    const totalHours = worksheet.getCell('G113');
+    totalHours.value = 'مجموع ساعات التدريب الفصليه';
+    totalHours.font = { bold: true, size: 10 };
+    totalHours.alignment = { vertical: 'middle', horizontal: 'center' };
+    totalHours.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F5E9' }
+    };
+    totalHours.border = {
+        top:    { style: 'medium' },
+        left:   { style: 'medium' },
+        bottom: { style: 'medium' },
+        right:  { style: 'medium' }
+    };
+
+    worksheet.mergeCells('B113:E113');
+    const totalMarks = worksheet.getCell('B113');
+    totalMarks.value = 'مجموع درجات التقييمات من ١٠٠ درجه';
+    totalMarks.font = { bold: true, size: 10 };
+    totalMarks.alignment = { vertical: 'middle', horizontal: 'center' };
+    totalMarks.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F5E9' }
+    };
+    totalMarks.border = {
+        top:    { style: 'medium' },
+        left:   { style: 'medium' },
+        bottom: { style: 'medium' },
+        right:  { style: 'medium' }
+    };
+
+    // ---- Add bold bottom borders to A113 and F113 ----
+    worksheet.getCell('A113').border = {
+        bottom: { style: 'medium' }
+    };
+
+    worksheet.getCell('F113').border = {
+        bottom: { style: 'medium' }
+    };
+
+    // The total of training hours and grades
+    worksheet.getCell('F113').value = {
+        formula: 'SUM(F56:F112)'
+    };
+    worksheet.getCell('F113').font = { bold: true, size: 10 };
+    worksheet.getCell('F113').alignment = { vertical: 'middle', horizontal: 'center' };
+
+    worksheet.getCell('A113').value = {
+        formula: 'SUM(A56:A112)'
+    };
+    worksheet.getCell('A113').font = { bold: true, size: 10 };
+    worksheet.getCell('A113').alignment = { vertical: 'middle', horizontal: 'center' };
+    
+    // Grades summary
+
+    // 1) Merge first
+    worksheet.mergeCells('H115:I118');
+    worksheet.mergeCells('F115:G116');
+    worksheet.mergeCells('D115:E116');
+    worksheet.mergeCells('B115:C116');
+
+    worksheet.mergeCells('B117:B118');
+    worksheet.mergeCells('C117:C118');
+    worksheet.mergeCells('D117:D118');
+    worksheet.mergeCells('E117:E118');
+    worksheet.mergeCells('F117:F118');
+    worksheet.mergeCells('G117:G118');
+
+    // 2) Values
+    worksheet.getCell('H115').value = 'تنويه: يمكن التعرف على طرق ووسائل التدريب من خلال الرابط';
+    worksheet.getCell('F115').value = 'درجه الاعمال الفصليه من ٦٠';
+    worksheet.getCell('D115').value = 'درجه الاختبار النهائي من ٤٠';
+    worksheet.getCell('B115').value = 'مجموع الدرجات من ١٠٠';
+
+    worksheet.getCell('G117').value = 0;
+    worksheet.getCell('E117').value = 0;
+    worksheet.getCell('C117').value = 0;
+
+    // Red background for the three cells
+    ['G117', 'E117', 'C117'].forEach(addr => {
+        worksheet.getCell(addr).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFC7CE' } // soft red (Excel-style warning)
+        };
+    });
+
+
+    worksheet.getCell('F117').value = 'من ٦٠';
+    worksheet.getCell('D117').value = 'من ٤٠';
+    worksheet.getCell('B117').value = 'من ١٠٠';
+
+    // 3) Wrap + Center + Font
+    const cellsToCenterWrapBold = ['H115', 'F115', 'D115', 'B115'];
+    cellsToCenterWrapBold.forEach(addr => {
+    const cell = worksheet.getCell(addr);
+    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    cell.font = { bold: true, size: 10 };
+    });
+
+    const cellsToCenterWrap = ['B117', 'C117', 'D117', 'E117', 'F117', 'G117'];
+    cellsToCenterWrap.forEach(addr => {
+    const cell = worksheet.getCell(addr);
+    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    cell.font = { size: 10 };
+    });
+
+
+    // 4) Borders: thin for all cells in B115:I118
+    for (let r = 115; r <= 118; r++) {
+    ['B','C','D','E','F','G','H','I'].forEach(col => {
+        const cell = worksheet.getCell(`${col}${r}`);
+        cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+        };
+    });
+    }
+
+    // 5) Medium outer border around B115:I118
+    // Top (row 115)
+    ['B','C','D','E','F','G','H','I'].forEach(col => {
+    worksheet.getCell(`${col}115`).border.top = { style: 'medium' };
+    });
+
+    // Bottom (row 118)
+    ['B','C','D','E','F','G','H','I'].forEach(col => {
+    worksheet.getCell(`${col}118`).border.bottom = { style: 'medium' };
+    });
+
+    // Left edge (col B)
+    [115,116,117,118].forEach(r => {
+    worksheet.getCell(`B${r}`).border.left = { style: 'medium' };
+    });
+
+    // Right edge (col I)
+    [115,116,117,118].forEach(r => {
+    worksheet.getCell(`I${r}`).border.right = { style: 'medium' };
+    });
+
 
 
     // Borders
     const tableRange = [];
-    for (let i = 55; i <= 95; i++) {
+    for (let i = 55; i <= 112; i++) {
         ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'].forEach(col => {
             tableRange.push(`${col}${i}`);
         });
@@ -728,9 +926,9 @@ downloadButton.addEventListener('click', async () => {
 
     // Apply medium external borders
     ['A55', 'B55', 'C55', 'D55', 'E55', 'F55', 'G55', 'H55', 'I55', 'J55'].forEach(cell => worksheet.getCell(cell).border.top = { style: 'medium' });
-    ['A95', 'B95', 'C95', 'D95', 'E95', 'F95', 'G95', 'H95', 'I95', 'J95'].forEach(cell => worksheet.getCell(cell).border.bottom = { style: 'medium' });
-    ['A55', 'A56', 'A57', 'A58', 'A59', 'A60', 'A61', 'A62', 'A63', 'A64', 'A65', 'A66', 'A67', 'A68', 'A69', 'A70', 'A71', 'A72', 'A73', 'A74', 'A75', 'A76', 'A77', 'A78', 'A79', 'A80', 'A81', 'A82', 'A83', 'A84', 'A85', 'A86', 'A87', 'A88', 'A89', 'A90', 'A91', 'A92', 'A93', 'A94', 'A95'].forEach(cell => worksheet.getCell(cell).border.left = { style: 'medium' });
-    ['J55', 'J56', 'J57', 'J58', 'J59', 'J60', 'J61', 'J62', 'J63', 'J64', 'J65', 'J66', 'J67', 'J68', 'J69', 'J70', 'J71', 'J72', 'J73', 'J74', 'J75', 'J76', 'J77', 'J78', 'J79', 'J80', 'J81', 'J82', 'J83', 'J84', 'J85', 'J86', 'J87', 'J88', 'J89', 'J90', 'J91', 'J92', 'J93', 'J94', 'J95'].forEach(cell => worksheet.getCell(cell).border.right = { style: 'medium' });
+    ['A112', 'B112', 'C112', 'D112', 'E112', 'F112', 'G112', 'H112', 'I112', 'J112'].forEach(cell => worksheet.getCell(cell).border.bottom = { style: 'medium' });
+    ['A55', 'A56', 'A57', 'A58', 'A59', 'A60', 'A61', 'A62', 'A63', 'A64', 'A65', 'A66', 'A67', 'A68', 'A69', 'A70', 'A71', 'A72', 'A73', 'A74', 'A75', 'A76', 'A77', 'A78', 'A79', 'A80', 'A81', 'A82', 'A83', 'A84', 'A85', 'A86', 'A87', 'A88', 'A89', 'A90', 'A91', 'A92', 'A93', 'A94', 'A95', 'A96', 'A97', 'A98', 'A99', 'A100','A101', 'A102', 'A103', 'A104', 'A105', 'A106','A107', 'A108', 'A109', 'A110', 'A111', 'A112'].forEach(cell => worksheet.getCell(cell).border.left = { style: 'medium' });
+    ['J55', 'J56', 'J57', 'J58', 'J59', 'J60', 'J61', 'J62', 'J63', 'J64', 'J65', 'J66', 'J67', 'J68', 'J69', 'J70', 'J71', 'J72', 'J73', 'J74', 'J75', 'J76', 'J77', 'J78', 'J79', 'J80', 'J81', 'J82', 'J83', 'J84', 'J85', 'J86', 'J87', 'J88', 'J89', 'J90', 'J91', 'J92', 'J93', 'J94', 'J95', 'J96', 'J97', 'J98', 'J99', 'J100','J101', 'J102', 'J103', 'J104', 'J105', 'J106', 'J107', 'J108', 'J109', 'J110', 'J111', 'J112'].forEach(cell => worksheet.getCell(cell).border.right = { style: 'medium' });
 
     worksheet.getCell('A54').border = {
         top: { style: 'medium' },
@@ -740,206 +938,223 @@ downloadButton.addEventListener('click', async () => {
     };
 
 
-    // ---------------- Training resources ---------------- //
-    worksheet.addRow([]);
-    worksheet.mergeCells('B97:I97');  
-    const trainingResources = worksheet.getCell('B97');
+    
+   // ---------------- Training resources ---------------- //
+
+    worksheet.addRow([]); // spacer
+    worksheet.mergeCells('B120:I120');
+    const trainingResources = worksheet.getCell('B120');
     trainingResources.value = 'المراجع التدريبيه';
     trainingResources.font = { bold: true, size: 12 };
     trainingResources.alignment = { vertical: 'middle', horizontal: 'center' };
     trainingResources.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
 
     // Header
-    worksheet.mergeCells('G98:I98');
-    const c1 = worksheet.getCell('G98');
+    worksheet.mergeCells('G121:I121');
+    const c1 = worksheet.getCell('G121');
     c1.value = 'المرجع الرئيسي للمقرر';
 
-    worksheet.mergeCells('E98:F98');
-    const c2 = worksheet.getCell('E98');
+    worksheet.mergeCells('E121:F121');
+    const c2 = worksheet.getCell('E121');
     c2.value = 'المواقع الالكترونيه';
 
-    worksheet.mergeCells('B98:D98');
-    const c3 = worksheet.getCell('B98');
+    worksheet.mergeCells('B121:D121');
+    const c3 = worksheet.getCell('B121');
     c3.value = 'منصات الكترونيه';
 
     // Rows
-    const mergedCells = ['G99:I99', 'E99:F99', 'B99:D99', 
-                        'G100:I100', 'E100:F100', 'B100:D100', 
-                        'G101:I101', 'E101:F101', 'B101:D101'];
+    const mergedCells = [
+    'G122:I122', 'E122:F122', 'B122:D122',
+    'G123:I123', 'E123:F123', 'B123:D123',
+    'G124:I124', 'E124:F124', 'B124:D124'
+    ];
 
     mergedCells.forEach(range => worksheet.mergeCells(range));
 
     // Apply formatting to all relevant cells (alignment and font size)
-    const trainingResourcesCellsToFormat = ['G98', 'E98', 'B98', 'G99', 'E99', 'B99', 'G100', 'E100', 'B100', 'G101', 'E101', 'B101'];
-    trainingResourcesCellsToFormat.forEach(cell => {
-        const formattedCell = worksheet.getCell(cell);
-        formattedCell.alignment = { vertical: 'middle', horizontal: 'center' };
-        formattedCell.font = { size: 8 };
+    const trainingResourcesCellsToFormat = [
+    'G121', 'E121', 'B121',
+    'G122', 'E122', 'B122',
+    'G123', 'E123', 'B123',
+    'G124', 'E124', 'B124'
+    ];
+
+    trainingResourcesCellsToFormat.forEach(addr => {
+    const formattedCell = worksheet.getCell(addr);
+    formattedCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    formattedCell.font = { size: 8 };
     });
 
     // Borders
     const trainingResourcesTableRange = [];
-    for (let i = 97; i <= 101; i++) {
-        ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].forEach(col => {
-            trainingResourcesTableRange.push(`${col}${i}`);
-        });
+    for (let i = 120; i <= 124; i++) {
+    ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].forEach(col => {
+        trainingResourcesTableRange.push(`${col}${i}`);
+    });
     }
 
     // Apply thin internal borders
     trainingResourcesTableRange.forEach(cellAddress => {
-        const cell = worksheet.getCell(cellAddress);
-        cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-        };
+    const cell = worksheet.getCell(cellAddress);
+    cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+    };
     });
 
     // Apply medium external borders
-    ['B97', 'C97', 'D97', 'E97', 'F97', 'G97', 'H97', 'I97'].forEach(cell => worksheet.getCell(cell).border.top = { style: 'medium' });
-    ['B101', 'C101', 'D101', 'E101', 'F101', 'G101', 'H101', 'I101'].forEach(cell => worksheet.getCell(cell).border.bottom = { style: 'medium' });
-    ['B97', 'B98', 'B99', 'B100', 'B101'].forEach(cell => worksheet.getCell(cell).border.left = { style: 'medium' });
-    ['I97', 'I98', 'I99', 'I100', 'I101'].forEach(cell => worksheet.getCell(cell).border.right = { style: 'medium' });
+    ['B120','C120','D120','E120','F120','G120','H120','I120'].forEach(addr => worksheet.getCell(addr).border.top = { style: 'medium' });
+    ['B124','C124','D124','E124','F124','G124','H124','I124'].forEach(addr => worksheet.getCell(addr).border.bottom = { style: 'medium' });
+    ['B120','B121','B122','B123','B124'].forEach(addr => worksheet.getCell(addr).border.left = { style: 'medium' });
+    ['I120','I121','I122','I123','I124'].forEach(addr => worksheet.getCell(addr).border.right = { style: 'medium' });
+
 
     // ---------------- Quality assessment ---------------- //
-    worksheet.addRow([]);
-    worksheet.mergeCells('B103:I103');  
-    const trainingResources2 = worksheet.getCell('B103');
+    worksheet.addRow([]); // spacer
+    worksheet.mergeCells('B126:I126');
+    const trainingResources2 = worksheet.getCell('B126');
     trainingResources2.value = 'تقييم جوده المقرر';
     trainingResources2.font = { bold: true, size: 12 };
     trainingResources2.alignment = { vertical: 'middle', horizontal: 'center' };
     trainingResources2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
 
     // Header
-    worksheet.mergeCells('G104:I104');
-    const c1_2 = worksheet.getCell('G104');
+    worksheet.mergeCells('G127:I127');
+    const c1_2 = worksheet.getCell('G127');
     c1_2.value = 'مجالات التقييم';
 
-    worksheet.mergeCells('E104:F104');
-    const c2_2 = worksheet.getCell('E104');
+    worksheet.mergeCells('E127:F127');
+    const c2_2 = worksheet.getCell('E127');
     c2_2.value = 'المقيمون';
 
-    worksheet.mergeCells('B104:D104');
-    const c3_2 = worksheet.getCell('B104');
+    worksheet.mergeCells('B127:D127');
+    const c3_2 = worksheet.getCell('B127');
     c3_2.value = 'طريقه التقييم';
 
     // Rows
-    const mergedCells2 = ['G105:I105', 'E105:F105', 'B105:D105', 
-                        'G106:I106', 'E106:F106', 'B106:D106', 
-                        'G107:I107', 'E107:F107', 'B107:D107'];
+    const mergedCells2 = [
+    'G128:I128', 'E128:F128', 'B128:D128',
+    'G129:I129', 'E129:F129', 'B129:D129',
+    'G130:I130', 'E130:F130', 'B130:D130'
+    ];
 
     mergedCells2.forEach(range => worksheet.mergeCells(range));
 
     // Apply formatting to all relevant cells (alignment and font size)
-    const trainingResourcesCellsToFormat2 = ['G104', 'E104', 'B104', 'G105', 'E105', 'B105', 'G106', 'E106', 'B106', 'G107', 'E107', 'B107'];
-    trainingResourcesCellsToFormat2.forEach(cell => {
-        const formattedCell = worksheet.getCell(cell);
-        formattedCell.alignment = { vertical: 'middle', horizontal: 'center' };
-        formattedCell.font = { size: 8 };
+    const trainingResourcesCellsToFormat2 = [
+    'G127', 'E127', 'B127',
+    'G128', 'E128', 'B128',
+    'G129', 'E129', 'B129',
+    'G130', 'E130', 'B130'
+    ];
+
+    trainingResourcesCellsToFormat2.forEach(addr => {
+    const formattedCell = worksheet.getCell(addr);
+    formattedCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    formattedCell.font = { size: 8 };
     });
 
     // Borders
     const trainingResourcesTableRange2 = [];
-    for (let i = 103; i <= 107; i++) {
-        ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].forEach(col => {
-            trainingResourcesTableRange2.push(`${col}${i}`);
-        });
+    for (let i = 126; i <= 130; i++) {
+    ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].forEach(col => {
+        trainingResourcesTableRange2.push(`${col}${i}`);
+    });
     }
 
     // Apply thin internal borders
     trainingResourcesTableRange2.forEach(cellAddress => {
-        const cell = worksheet.getCell(cellAddress);
-        cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-        };
+    const cell = worksheet.getCell(cellAddress);
+    cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+    };
     });
 
     // Apply medium external borders
-    ['B103', 'C103', 'D103', 'E103', 'F103', 'G103', 'H103', 'I103'].forEach(cell => worksheet.getCell(cell).border.top = { style: 'medium' });
-    ['B107', 'C107', 'D107', 'E107', 'F107', 'G107', 'H107', 'I107'].forEach(cell => worksheet.getCell(cell).border.bottom = { style: 'medium' });
-    ['B103', 'B104', 'B105', 'B106', 'B107'].forEach(cell => worksheet.getCell(cell).border.left = { style: 'medium' });
-    ['I103', 'I104', 'I105', 'I106', 'I107'].forEach(cell => worksheet.getCell(cell).border.right = { style: 'medium' });
+    ['B126','C126','D126','E126','F126','G126','H126','I126'].forEach(addr => worksheet.getCell(addr).border.top = { style: 'medium' });
+    ['B130','C130','D130','E130','F130','G130','H130','I130'].forEach(addr => worksheet.getCell(addr).border.bottom = { style: 'medium' });
+    ['B126','B127','B128','B129','B130'].forEach(addr => worksheet.getCell(addr).border.left = { style: 'medium' });
+    ['I126','I127','I128','I129','I130'].forEach(addr => worksheet.getCell(addr).border.right = { style: 'medium' });
 
 
-    // -------------------- Trainer and Head Names Table ---------------- // 
+    // -------------------- Trainer and Head Names Table ---------------- //
 
     // Trainer
-    worksheet.addRow([]);
-    worksheet.mergeCells('I109:J109');
-    const trainerName = worksheet.getCell('I109');
+    worksheet.addRow([]); // spacer
+    worksheet.mergeCells('I132:J132');
+    const trainerName = worksheet.getCell('I132');
     trainerName.value = 'اسم المدرب';
-    worksheet.getCell('G109').value = selectedTrainer.name || 'N/A';
+    worksheet.getCell('G132').value = selectedTrainer.name || 'N/A';
 
-
-    worksheet.mergeCells('G109:H109');
-    worksheet.mergeCells('E109:F109');
-    const trainerEmail = worksheet.getCell('E109');
+    worksheet.mergeCells('G132:H132');
+    worksheet.mergeCells('E132:F132');
+    const trainerEmail = worksheet.getCell('E132');
     trainerEmail.value = 'البريد الالكتروني';
 
-    worksheet.mergeCells('C109:D109');
-    const theDate1 = worksheet.getCell('B109');
+    worksheet.mergeCells('C132:D132');
+    const theDate1 = worksheet.getCell('B132');
     theDate1.value = 'التاريخ';
-    worksheet.getCell('A109').value = formattedDate;
+    worksheet.getCell('A132').value = formattedDate;
 
 
     // Head
-    worksheet.addRow([]);
-    worksheet.mergeCells('I110:J110');
-    const headName = worksheet.getCell('I110');
+    worksheet.addRow([]); // next row
+    worksheet.mergeCells('I133:J133');
+    const headName = worksheet.getCell('I133');
     headName.value = 'رئيس القسم';
 
-    //worksheet.getCell('G110').value = 'م. احمد العيسى'
+    // worksheet.getCell('G133').value = 'م. احمد العيسى'
 
-    worksheet.mergeCells('G110:H110');
-    worksheet.mergeCells('E110:F110');
-    const headEmail = worksheet.getCell('E110');
+    worksheet.mergeCells('G133:H133');
+    worksheet.mergeCells('E133:F133');
+    const headEmail = worksheet.getCell('E133');
     headEmail.value = 'البريد الالكتروني';
 
-    worksheet.mergeCells('C110:D110');
-    const theDate2 = worksheet.getCell('B110');
+    worksheet.mergeCells('C133:D133');
+    const theDate2 = worksheet.getCell('B133');
     theDate2.value = 'التاريخ';
-    worksheet.getCell("A110").value = formattedDate;
+    worksheet.getCell('A133').value = formattedDate;
 
     // Apply formatting to all relevant cells (alignment and font size)
-    const trainerHeadCellsToFormat = ['A109', 'B109', 'E109', 'I109', 'A110', 'B110', 'E110', 'I110'];
-    trainerHeadCellsToFormat.forEach(cell => {
-        const formattedCell = worksheet.getCell(cell);
-        formattedCell.alignment = { vertical: 'middle', horizontal: 'center' };
-        formattedCell.font = { size: 10 };
+    const trainerHeadCellsToFormat = ['A132', 'B132', 'E132', 'I132', 'A133', 'B133', 'E133', 'I133'];
+    trainerHeadCellsToFormat.forEach(addr => {
+    const formattedCell = worksheet.getCell(addr);
+    formattedCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    formattedCell.font = { size: 10 };
     });
 
     // Borders
     const trainerHeadTableRange = [];
-    for (let i = 109; i <= 110; i++) {
-        ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'].forEach(col => {
-            trainerHeadTableRange.push(`${col}${i}`);
-        });
+    for (let i = 132; i <= 133; i++) {
+    ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'].forEach(col => {
+        trainerHeadTableRange.push(`${col}${i}`);
+    });
     }
 
     // Apply thin internal borders
     trainerHeadTableRange.forEach(cellAddress => {
-        const cell = worksheet.getCell(cellAddress);
-        cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-        };
+    const cell = worksheet.getCell(cellAddress);
+    cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+    };
     });
 
     // Apply medium external borders
-    ['A109', 'B109', 'C109', 'D109', 'E109', 'F109', 'G109', 'H109', 'I109', 'J109'].forEach(cell => worksheet.getCell(cell).border.top = { style: 'medium' });
-    ['A110', 'B110', 'C110', 'D110', 'E110', 'F110', 'G110', 'H110', 'I110', 'J110'].forEach(cell => worksheet.getCell(cell).border.bottom = { style: 'medium' });
-    ['A109', 'A110'].forEach(cell => worksheet.getCell(cell).border.left = { style: 'medium' });
-    ['J109', 'J110'].forEach(cell => worksheet.getCell(cell).border.right = { style: 'medium' });
+    ['A132','B132','C132','D132','E132','F132','G132','H132','I132','J132'].forEach(addr => worksheet.getCell(addr).border.top = { style: 'medium' });
+    ['A133','B133','C133','D133','E133','F133','G133','H133','I133','J133'].forEach(addr => worksheet.getCell(addr).border.bottom = { style: 'medium' });
+    ['A132','A133'].forEach(addr => worksheet.getCell(addr).border.left = { style: 'medium' });
+    ['J132','J133'].forEach(addr => worksheet.getCell(addr).border.right = { style: 'medium' });
 
 
-
-    
+        
     // -------------------------------------------------------------------------- //
 
     // Define widths for columns A to J
@@ -950,8 +1165,8 @@ downloadButton.addEventListener('click', async () => {
     worksheet.getColumn('E').width = 8;
     worksheet.getColumn('F').width = 7;
     worksheet.getColumn('G').width = 7;
-    worksheet.getColumn('H').width = 15.5;
-    worksheet.getColumn('I').width = 15;
+    worksheet.getColumn('H').width = 22.5;
+    worksheet.getColumn('I').width = 8;
     worksheet.getColumn('J').width = 2.5;
 
     // Hide all columns beyond J (starting from column 11 to 16384)
